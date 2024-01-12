@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('menus', function (Blueprint $table) {
             $table->id();
-            $table->foreign('daily_menu_id')->references('id')->on('daily_menus')->onDelete('cascade');
             $table->timestamps();
         });
     }

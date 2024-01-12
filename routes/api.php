@@ -31,6 +31,15 @@ Route::group([
     Route::get('user', 'App\Http\Controllers\AuthController@getUser')->name('user');
 });
 
+
+Route::group([
+    'middleware' => 'api'
+], function ($router) {
+    Route::apiResource('meals', 'App\Http\Controllers\MealController');
+    Route::apiResource('menus', 'App\Http\Controllers\MenuController');
+    Route::apiResource('daily-menus', 'App\Http\Controllers\DailyMenuController');
+});
+
 Route::fallback(function() {
     return response()->json(['message' => 'Not Found.'], 404);
 });

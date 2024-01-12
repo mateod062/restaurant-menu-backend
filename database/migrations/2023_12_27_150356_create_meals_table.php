@@ -14,10 +14,11 @@ return new class extends Migration
         Schema::create('meals', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->decimal('price');
             $table->string('category');
+            $table->decimal('price', 8, 2);
             $table->timestamps();
         });
+
     }
 
     /**
