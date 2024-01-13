@@ -13,7 +13,9 @@ class MealController extends Controller
      */
     public function index()
     {
-        return Meal::all();
+        $meals = Meal::all();
+        $meals = collect($meals)->sortBy('name')->values()->toArray();
+        return response()->json($meals);
     }
 
     /**
