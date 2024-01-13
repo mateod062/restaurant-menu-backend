@@ -34,24 +34,12 @@ class Menu extends Model
 {
     use HasFactory;
 
-    public function soups()
-    {
-        return $this->belongsToMany(Meal::class, 'menu_meal', 'menu_id', 'soup_id');
-    }
+    protected $fillable = ['daily_menu_id'];
 
-    public function mainMeals()
+    public function meals()
     {
-        return $this->belongsToMany(Meal::class, 'menu_meal', 'menu_id', 'main_meal_id');
-    }
-
-    public function sideDishes()
-    {
-        return $this->belongsToMany(Meal::class, 'menu_meal', 'menu_id', 'side_dish_id');
-    }
-
-    public function desserts()
-    {
-        return $this->belongsToMany(Meal::class, 'menu_meal', 'menu_id', 'dessert_id');
+        return $this->belongsToMany(Meal::class, 'meal_menu', 'menu_id', 'meal_id')
+            ->withTimestamps();
     }
 
     public function dailyMenu()

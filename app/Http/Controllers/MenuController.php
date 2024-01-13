@@ -13,16 +13,36 @@ use Illuminate\Validation\ValidationException;
 class MenuController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Format the menu response.
+     */
+    public function formatMenuResponse($menu): array
+    {
+        return [
+            'id' => $menu->id,
+            'soup' => $menu->meals[0]->name,
+            'main_meal' => $menu->meals[1]->name,
+            'side_dish' => $menu->meals[2]->name,
+            'dessert' => $menu->meals[3]->name
+        ];
+    }
+
+    /**
+     * Display all menus from the database.
      */
     public function index()
     {
         $menus = Menu::with('meals')->get();
-        return response()->json($menus);
+        $response = [];
+
+        foreach ($menus as $menu) {
+            $response[] = $this->formatMenuResponse($menu);
+        }
+
+        return response()->json($response);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created menu in the database.
      */
     public function store(Request $request)
     {
@@ -35,18 +55,16 @@ class MenuController extends Controller
                 'daily_menu_date' => 'required|exists:daily_menus,date'
             ]);
 
-            $menu = Menu::query()->create();
+            $soupId = Meal::query()->where('name', $validated['soup'])->firstOrFail()->id;
+            $mainMealId = Meal::query()->where('name', $validated['main_meal'])->firstOrFail()->id;
+            $sideDishId = Meal::query()->where('name', $validated['side_dish'])->firstOrFail()->id;
+            $dessertId = Meal::query()->where('name', $validated['dessert'])->firstOrFail()->id;
+            $dailyMenuId = DailyMenu::query()->where('date', $validated['daily_menu_date'])->firstOrFail()->id;
 
-            $soupId = Meal::where('name', $validated['soup'])->firstOrFail()->id;
-            $mainMealId = Meal::where('name', $validated['main_meal'])->firstOrFail()->id;
-            $sideDishId = Meal::where('name', $validated['side_dish'])->firstOrFail()->id;
-            $dessertId = Meal::where('name', $validated['dessert'])->firstOrFail()->id;
-            $dailyMenuId = DailyMenu::where('date', $validated['daily_menu_date'])->firstOrFail()->id;
+            $menu = Menu::query()->create(['daily_menu_id' => $dailyMenuId]);
 
-            $menu->soups()->attach($soupId);
-            $menu->mainMeals()->attach($mainMealId);
-            $menu->sideDishes()->attach($sideDishId);
-            $menu->desserts()->attach($dessertId);
+            $menu->meals()->attach([$soupId, $mainMealId, $sideDishId, $dessertId]);
+
             $menu->dailyMenu()->associate($dailyMenuId);
 
             return response()->json(['message' => 'Menu created successfully', 'menu' => $menu], 201);
@@ -56,20 +74,23 @@ class MenuController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified menu.
      */
     public function show(string $id)
     {
         try {
             $menu = Menu::with('meals')->findOrFail($id);
-            return response()->json($menu);
+
+            $response[] = $this->formatMenuResponse($menu);
+
+            return response()->json($response);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Menu not found'], 404);
         }
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified menu in the database.
      */
     public function update(Request $request, string $id)
     {
@@ -84,36 +105,35 @@ class MenuController extends Controller
                 'daily_menu_date' => 'required|exists:daily_menus,date'
             ]);
 
-            $soupId = Meal::where('name', $validated['soup'])->firstOrFail()->id;
-            $mainMealId = Meal::where('name', $validated['main_meal'])->firstOrFail()->id;
-            $sideDishId = Meal::where('name', $validated['side_dish'])->firstOrFail()->id;
-            $dessertId = Meal::where('name', $validated['dessert'])->firstOrFail()->id;
-            $dailyMenuId = DailyMenu::where('date', $validated['daily_menu_date'])->firstOrFail()->id;
+            $soupId = Meal::query()->where('name', $validated['soup'])->firstOrFail()->id;
+            $mainMealId = Meal::query()->where('name', $validated['main_meal'])->firstOrFail()->id;
+            $sideDishId = Meal::query()->where('name', $validated['side_dish'])->firstOrFail()->id;
+            $dessertId = Meal::query()->where('name', $validated['dessert'])->firstOrFail()->id;
+            $dailyMenuId = DailyMenu::query()->where('date', $validated['daily_menu_date'])->firstOrFail()->id;
 
-            $menu->soups()->attach($soupId);
-            $menu->mainMeals()->attach($mainMealId);
-            $menu->sideDishes()->attach($sideDishId);
-            $menu->desserts()->attach($dessertId);
+            $menu->meals()->sync([$soupId, $mainMealId, $sideDishId, $dessertId]);
+
+            $menu->dailyMenu()->dissociate();
             $menu->dailyMenu()->associate($dailyMenuId);
 
-            return response()->json(['message' => 'Menu updated successfully', 'menu' => $menu]);
+            $menu->save();
+
+            return response()->json(['message' => 'Menu updated successfully', 'menu' => $this->show($menu->id)]);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Menu not found'], 404);
         }
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified menu from the database.
      */
     public function destroy(string $id)
     {
         try {
             $menu = Menu::query()->findOrFail($id);
 
-            $menu->soups()->detach();
-            $menu->mainMeals()->detach();
-            $menu->sideDishes()->detach();
-            $menu->desserts()->detach();
+            $menu->meals()->detach();
+
             $menu->dailyMenu()->dissociate();
 
             $menu->delete();

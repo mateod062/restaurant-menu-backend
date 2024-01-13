@@ -40,11 +40,13 @@ class AuthController extends Controller
                 'name' => 'required|string|unique:users',
                 'email' => 'required|string|email|unique:users',
                 'password' => 'required|string|confirmed',
+                'is_admin' => 'optional|boolean'
             ]);
 
             $user = User::factory()->create(array_merge(
                 $request->only(['name', 'email']),
-                ['password' => bcrypt($request->password)]
+                ['password' => bcrypt($request->password)],
+                ['is_admin' => $request->is_admin ?? false]
             ));
 
             return response()->json(['message' => 'User created successfully', 'user' => $user]);

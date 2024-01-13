@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 class MealController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display all meals from the database.
      */
     public function index()
     {
@@ -17,7 +17,7 @@ class MealController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created meal in the database.
      */
     public function store(Request $request)
     {
@@ -32,7 +32,7 @@ class MealController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified meal.
      */
     public function show(string $id)
     {
@@ -45,7 +45,7 @@ class MealController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified meal in the database.
      */
     public function update(Request $request, string $id)
     {
@@ -67,7 +67,7 @@ class MealController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified meal from the database.
      */
     public function destroy(string $id)
     {
