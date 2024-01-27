@@ -28,7 +28,7 @@ class DailyMenu extends Model
     use HasFactory;
 
     protected $fillable = [
-        'date'
+        'title'
     ];
 
     public function menus()

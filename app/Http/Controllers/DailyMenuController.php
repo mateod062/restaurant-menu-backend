@@ -24,7 +24,7 @@ class DailyMenuController extends Controller
 
         return [
             'id' => $dailyMenu->id,
-            'date' => $dailyMenu->date,
+            'title' => $dailyMenu->title,
             'menus' => $menusFormatted
         ];
     }
@@ -50,7 +50,7 @@ class DailyMenuController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'date' => 'required|date|unique:daily_menus'
+            'title' => 'required|string|unique:daily_menus'
         ]);
 
         $dailyMenu = DailyMenu::query()->create($validated);
@@ -76,7 +76,7 @@ class DailyMenuController extends Controller
 
             $response[] = [
                 'id' => $dailyMenu->id,
-                'date' => $dailyMenu->date,
+                'title' => $dailyMenu->date,
                 'menus' => $menusFormatted
             ];
 
@@ -95,7 +95,7 @@ class DailyMenuController extends Controller
             $dailyMenu = DailyMenu::query()->findOrFail($id);
 
             $validated = $request->validate([
-                'date' => 'required|date|unique:daily_menus'
+                'title' => 'required|date|unique:daily_menus'
             ]);
 
             $dailyMenu->update($validated);

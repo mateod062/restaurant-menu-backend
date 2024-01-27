@@ -34,7 +34,10 @@ class Menu extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['daily_menu_id'];
+    protected $fillable = [
+        'title',
+        'daily_menu_id'
+    ];
 
     public function meals()
     {
