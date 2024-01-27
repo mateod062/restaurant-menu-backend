@@ -35,4 +35,9 @@ class Meal extends Model
         'category',
         'price'
     ];
+
+    public function menus()
+    {
+        return $this->belongsToMany(Menu::class, 'meal_menu', 'meal_id', 'menu_id');
+    }
 }

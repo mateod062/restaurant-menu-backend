@@ -19,10 +19,12 @@ class MenuController extends Controller
     {
         return [
             'id' => $menu->id,
+            'title' => $menu->title,
             'soup' => $menu->meals[0]->name,
             'main_meal' => $menu->meals[1]->name,
             'side_dish' => $menu->meals[2]->name,
-            'dessert' => $menu->meals[3]->name
+            'dessert' => $menu->meals[3]->name,
+            'daily_menu_title' => $menu->dailyMenu->title
         ];
     }
 
@@ -48,20 +50,25 @@ class MenuController extends Controller
     {
         try {
             $validated = $request->validate([
+                'title' => 'required|string|max:255',
                 'soup' => 'required|exists:meals,name',
                 'main_meal' => 'required|exists:meals,name',
                 'side_dish' => 'required|exists:meals,name',
                 'dessert' => 'required|exists:meals,name',
-                'daily_menu_date' => 'required|exists:daily_menus,date'
+                'daily_menu_title' => 'required|exists:daily_menus,title'
             ]);
 
+            $title = $validated['title'];
             $soupId = Meal::query()->where('name', $validated['soup'])->firstOrFail()->id;
             $mainMealId = Meal::query()->where('name', $validated['main_meal'])->firstOrFail()->id;
             $sideDishId = Meal::query()->where('name', $validated['side_dish'])->firstOrFail()->id;
             $dessertId = Meal::query()->where('name', $validated['dessert'])->firstOrFail()->id;
-            $dailyMenuId = DailyMenu::query()->where('date', $validated['daily_menu_date'])->firstOrFail()->id;
+            $dailyMenuId = DailyMenu::query()->where('title', $validated['daily_menu_title'])->firstOrFail()->id;
 
-            $menu = Menu::query()->create(['daily_menu_id' => $dailyMenuId]);
+            $menu = Menu::query()->create([
+                'title' => $title,
+                'daily_menu_id' => $dailyMenuId
+            ]);
 
             $menu->meals()->attach([$soupId, $mainMealId, $sideDishId, $dessertId]);
 
@@ -98,18 +105,21 @@ class MenuController extends Controller
             $menu = Menu::query()->findOrFail($id);
 
             $validated = $request->validate([
+                'title' => 'required|string|max:255',
                 'soup' => 'required|exists:meals,name',
                 'main_meal' => 'required|exists:meals,name',
                 'side_dish' => 'required|exists:meals,name',
                 'dessert' => 'required|exists:meals,name',
-                'daily_menu_date' => 'required|exists:daily_menus,date'
+                'daily_menu_title' => 'required|exists:daily_menus,title'
             ]);
 
             $soupId = Meal::query()->where('name', $validated['soup'])->firstOrFail()->id;
             $mainMealId = Meal::query()->where('name', $validated['main_meal'])->firstOrFail()->id;
             $sideDishId = Meal::query()->where('name', $validated['side_dish'])->firstOrFail()->id;
             $dessertId = Meal::query()->where('name', $validated['dessert'])->firstOrFail()->id;
-            $dailyMenuId = DailyMenu::query()->where('date', $validated['daily_menu_date'])->firstOrFail()->id;
+            $dailyMenuId = DailyMenu::query()->where('title', $validated['daily_menu_title'])->firstOrFail()->id;
+
+            $menu->update(['title' => $validated['title']]);
 
             $menu->meals()->sync([$soupId, $mainMealId, $sideDishId, $dessertId]);
 

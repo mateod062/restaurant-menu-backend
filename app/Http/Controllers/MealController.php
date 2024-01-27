@@ -74,12 +74,20 @@ class MealController extends Controller
     public function destroy(string $id)
     {
         try {
-            $meal = Meal::query()->findOrFail($id);
-            $meal->delete();
+            $meal = Meal::query()->with('menus')->findOrFail($id);
 
+            if (!$meal) {
+                return response()->json(['message' => 'Meal not found'], 404);
+            }
+
+            if ($meal->menus->count() > 0) {
+                return response()->json(['message' => 'Cannot delete meal because it is in a menu'], 400);
+            }
+
+            $meal->delete();
             return response()->json(['message' => 'Meal deleted successfully']);
-        } catch (ModelNotFoundException $e) {
-            return response()->json(['message' => 'Meal not found'], 404);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
         }
     }
 }
